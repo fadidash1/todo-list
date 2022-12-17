@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./style/syle.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <button id="clear">Clear All</button>
+            <span id="date">Wednesday, 13 2020</span>
+        </header>
+        <div class="content">
+            <div class="list">
+                <ul id="list-toDos">
+                    <!-- <li class="item">
+                        <i class="fa fa-circle-o tick " job="complete"></i>
+                        <span id="toDo" class="">Wash Plate</span>
+                        <i class="fa fa-trash-o delete" job="delete"></i>
+                    </li> -->
+
+                </ul>
+            </div>
+            <div class="addTodo">
+                <i class="fa fa-plus-circle circle"></i>
+                <input type="text" placeholder="Add To-do ..." id="input">
+            </div>
+        </div>
+
+        <script src="./app/list-to-do.js"></script>
+    </div>
+</body>
+
+</html>
