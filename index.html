@@ -1,40 +1,575 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-Do List App</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="./style/syle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --container-bg: #ffffff;
+            --text-color: #333333;
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --danger-color: #ff5252;
+            --danger-hover: #ff0000;
+            --border-color: #eeeeee;
+            --secondary-text: #666666;
+            --completed-text: #999999;
+            --shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            --input-border: #dddddd;
+            --scrollbar-track: #f1f1f1;
+            --scrollbar-thumb: #cccccc;
+        }
+
+        .dark-mode {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #2e7d32;
+            --primary-hover: #1b5e20;
+            --danger-color: #d32f2f;
+            --danger-hover: #b71c1c;
+            --border-color: #333333;
+            --secondary-text: #aaaaaa;
+            --completed-text: #757575;
+            --shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            --input-border: #444444;
+            --scrollbar-track: #2a2a2a;
+            --scrollbar-thumb: #555555;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--container-bg);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            padding: 25px;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .date {
+            font-size: clamp(14px, 3vw, 16px);
+            color: var(--secondary-text);
+            font-weight: 500;
+        }
+
+        .circle {
+            width: 45px;
+            height: 45px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+
+        .circle:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        .theme-toggle {
+            width: 45px;
+            height: 45px;
+            background-color: var(--container-bg);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--border-color);
+        }
+
+        #input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            display: none;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+        }
+
+        #input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+
+        .todos-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        #list-toDos {
+            list-style-type: none;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .fa-circle {
+            font-size: 22px;
+            margin-right: 15px;
+            cursor: pointer;
+            color: var(--secondary-text);
+            transition: all 0.3s;
+        }
+
+        .tick-through {
+            color: var(--primary-color);
+        }
+
+        .toDo {
+            flex-grow: 1;
+            font-size: clamp(14px, 4vw, 16px);
+            word-break: break-word;
+            padding-right: 10px;
+            transition: all 0.3s;
+        }
+
+        .line-through {
+            text-decoration: line-through;
+            color: var(--completed-text);
+        }
+
+        .delete {
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 20px;
+            margin-left: 10px;
+            opacity: 0.7;
+            transition: all 0.3s;
+        }
+
+        .delete:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        #clear {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #clear:hover {
+            background-color: var(--danger-hover);
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--secondary-text);
+            display: none;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .empty-state i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: var(--border-color);
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        .empty-state.show {
+            display: flex;
+        }
+
+        /* Scrollbar styling */
+        .todos-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .todos-container::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+            border-radius: 10px;
+        }
+
+        .todos-container::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 10px;
+        }
+
+        .todos-container::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* Fullscreen styles */
+        :fullscreen .container {
+            height: 100vh;
+            max-width: 100%;
+            border-radius: 0;
+            padding: 30px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                height: calc(100vh - 30px);
+            }
+            
+            .header {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .date {
+                order: 1;
+                width: 100%;
+            }
+            
+            .header-controls {
+                order: 2;
+                margin-left: auto;
+            }
+            
+            .item {
+                padding: 12px 0;
+            }
+        }
+    </style>
 </head>
-
 <body>
-
     <div class="container">
-        <header>
-            <button id="clear">Clear All</button>
-            <span id="date">Wednesday, 13 2020</span>
-        </header>
-        <div class="content">
-            <div class="list">
-                <ul id="list-toDos">
-                    <!-- <li class="item">
-                        <i class="fa fa-circle-o tick " job="complete"></i>
-                        <span id="toDo" class="">Wash Plate</span>
-                        <i class="fa fa-trash-o delete" job="delete"></i>
-                    </li> -->
-
-                </ul>
-            </div>
-            <div class="addTodo">
-                <i class="fa fa-plus-circle circle"></i>
-                <input type="text" placeholder="Add To-do ..." id="input">
+        <div class="header">
+            <div class="date" id="date"></div>
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="circle" id="fullscreenToggle">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="circle" id="addButton">
+                    <i class="fas fa-plus"></i>
+                </button>
             </div>
         </div>
 
-        <script src="./app/list-to-do.js"></script>
-    </div>
-</body>
+        <input type="text" id="input" placeholder="Add a new task...">
 
+        <div class="todos-container">
+            <div class="empty-state" id="emptyState">
+                <i class="far fa-check-circle"></i>
+                <h3>No tasks yet</h3>
+                <p>Click the + button to add a new task</p>
+            </div>
+
+            <ul id="list-toDos"></ul>
+        </div>
+
+        <button id="clear">Clear All Tasks</button>
+    </div>
+
+    <script>
+        // DOM Elements
+        const input = document.getElementById('input');
+        const date = document.getElementById('date');
+        const addButton = document.getElementById('addButton');
+        const list = document.getElementById('list-toDos');
+        const clear = document.getElementById('clear');
+        const emptyState = document.getElementById('emptyState');
+        const themeToggle = document.getElementById('themeToggle');
+        const fullscreenToggle = document.getElementById('fullscreenToggle');
+        const container = document.querySelector('.container');
+
+        // Constants
+        const CHECK = "tick-through";
+        const LINE_THROUGH = "line-through";
+        const UNCHECK = "";
+
+        // Variables
+        let LIST = [];
+        let id = 0;
+        let isDarkMode = false;
+
+        // Initialize the app
+        function init() {
+            // Set up date display
+            updateDate();
+            setInterval(updateDate, 60000); // Update time every minute
+
+            // Load theme preference
+            loadThemePreference();
+
+            // Load data from localStorage
+            loadFromLocalStorage();
+
+            // Set up event listeners
+            setupEventListeners();
+        }
+
+        function updateDate() {
+            const options = { 
+                weekday: 'long', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            const today = new Date();
+            date.innerHTML = today.toLocaleDateString("en-US", options);
+        }
+
+        function loadThemePreference() {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "dark") {
+                enableDarkMode();
+            } else {
+                enableLightMode();
+            }
+        }
+
+        function enableDarkMode() {
+            document.documentElement.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            isDarkMode = true;
+            localStorage.setItem("theme", "dark");
+        }
+
+        function enableLightMode() {
+            document.documentElement.classList.remove('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            isDarkMode = false;
+            localStorage.setItem("theme", "light");
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+                fullscreenToggle.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                document.exitFullscreen();
+                fullscreenToggle.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+        }
+
+        function loadFromLocalStorage() {
+            const data = localStorage.getItem("TODO");
+            if (data) {
+                LIST = JSON.parse(data);
+                id = LIST.length;
+                loadList(LIST);
+            }
+            updateEmptyState();
+        }
+
+        function loadList(array) {
+            array.forEach(item => {
+                addTodo(item.title, item.id, item.done, item.trash);
+            });
+        }
+
+        function addTodo(toDo, id, done, trash) {
+            if (trash) return;
+
+            const DONE = done ? CHECK : UNCHECK;
+            const LINE = done ? LINE_THROUGH : "";
+
+            const text = `
+                <li class="item">
+                    <i class="far fa-circle ${DONE}" id="${id}" job="complete"></i>
+                    <span id="${id}" class="${LINE} toDo">${toDo}</span>
+                    <i class="fas fa-trash-alt delete" id="${id}" job="delete"></i>
+                </li>
+            `;
+
+            list.insertAdjacentHTML("beforeend", text);
+            updateEmptyState();
+        }
+
+        function completeTodo(element) {
+            element.classList.toggle(CHECK);
+            element.classList.toggle(UNCHECK);
+            element.parentNode.querySelector(".toDo").classList.toggle(LINE_THROUGH);
+            LIST[element.id].done = LIST[element.id].done ? false : true;
+            saveToLocalStorage();
+        }
+
+        function removeTodo(element) {
+            element.parentNode.parentNode.removeChild(element.parentNode);
+            LIST[element.id].trash = true;
+            saveToLocalStorage();
+            updateEmptyState();
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem("TODO", JSON.stringify(LIST));
+        }
+
+        function updateEmptyState() {
+            const hasItems = LIST.some(item => !item.trash);
+            emptyState.classList.toggle('show', !hasItems);
+        }
+
+        function clearAllTodos() {
+            if (LIST.length === 0 || !confirm("Are you sure you want to delete all tasks?")) return;
+            
+            localStorage.removeItem("TODO");
+            LIST = [];
+            id = 0;
+            list.innerHTML = '';
+            updateEmptyState();
+        }
+
+        function setupEventListeners() {
+            // Add task
+            addButton.addEventListener('click', () => {
+                input.style.display = 'block';
+                input.focus();
+            });
+
+            // Input field
+            input.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    const toDo = input.value.trim();
+                    if (toDo) {
+                        addTodo(toDo, id, false, false);
+                        LIST.push({
+                            title: toDo,
+                            id: id,
+                            done: false,
+                            trash: false
+                        });
+                        saveToLocalStorage();
+                        id++;
+                        input.value = "";
+                        input.style.display = 'none';
+                    }
+                }
+            });
+
+            // Task interactions
+            list.addEventListener('click', (event) => {
+                const element = event.target;
+                const elementJob = element.getAttribute('job');
+
+                if (elementJob === "complete") {
+                    completeTodo(element);
+                } else if (elementJob === "delete") {
+                    removeTodo(element);
+                }
+            });
+
+            // Clear button
+            clear.addEventListener('click', clearAllTodos);
+
+            // Theme toggle
+            themeToggle.addEventListener('click', () => {
+                if (isDarkMode) {
+                    enableLightMode();
+                } else {
+                    enableDarkMode();
+                }
+            });
+
+            // Fullscreen toggle
+            fullscreenToggle.addEventListener('click', toggleFullscreen);
+
+            // Handle fullscreen change events
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement) {
+                    fullscreenToggle.innerHTML = '<i class="fas fa-expand"></i>';
+                }
+            });
+        }
+
+        // Initialize the app
+        init();
+    </script>
+</body>
 </html>
